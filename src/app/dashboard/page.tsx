@@ -51,24 +51,18 @@ export default function DashboardPage() {
     }
   };
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Calculate usage stats from server data
   const searchesToday = usageData?.action_count || 0;
-  const searchesLimit = tierLimits?.searches_per_day === -1 ? Infinity : (tierLimits?.searches_per_day || 0);
+  const searchesLimit = tierLimits?.searches_per_day === -1 ? Infinity : (tierLimits?.searches_per_day || 10);
   const percentageUsed = searchesLimit === Infinity ? 0 : (searchesToday / searchesLimit) * 100;
   const canSearch = searchesLimit === Infinity || searchesToday < searchesLimit;
 
-  const tierFeatures = tierService.getTierFeatures(profile.tier);
+  // Use default values if profile is null
+  const userTier = profile?.tier || 'free';
+  const userName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+  const memberSince = profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : new Date().toLocaleDateString();
+  
+  const tierFeatures = tierService.getTierFeatures(userTier);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -100,7 +94,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back, {profile.full_name || 'User'}!
+            Welcome back, {userName}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Here's your account overview and recent activity
@@ -108,7 +102,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Trial Banner */}
-        {profile.tier === 'free' && trialDays > 0 && (
+        {userTier === 'free' && trialDays > 0 && (
           <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start justify-between">
             <div className="flex items-start space-x-3">
               <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
@@ -136,7 +130,7 @@ export default function DashboardPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Current Plan</h3>
-              <Crown className={`h-5 w-5 ${profile.tier === 'enterprise' ? 'text-yellow-500' : profile.tier === 'pro' ? 'text-blue-500' : 'text-gray-400'}`} />
+              <Crown className={`h-5 w-5 ${userTier === 'enterprise' ? 'text-yellow-500' : userTier === 'pro' ? 'text-blue-500' : 'text-gray-400'}`} />
             </div>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               {tierFeatures.name}
@@ -144,7 +138,7 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               ${tierFeatures.price}/month
             </p>
-            {profile.tier !== 'enterprise' && (
+            {userTier !== 'enterprise' && (
               <Link
                 href="/pricing"
                 className="mt-4 block text-center py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
@@ -186,7 +180,7 @@ export default function DashboardPage() {
               Active
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Member since {new Date(profile.created_at).toLocaleDateString()}
+              Member since {memberSince}
             </p>
           </div>
         </div>
