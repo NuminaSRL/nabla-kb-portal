@@ -1,0 +1,81 @@
+
+> nabla-kb-portal@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.18
+  - Environments: .env.local, .env.production
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/19) ...
+   Generating static pages (4/19) 
+   Generating static pages (9/19) 
+   Generating static pages (14/19) 
+ ✓ Generating static pages (19/19)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                     Size     First Load JS
+┌ ○ /                                           181 B          94.2 kB
+├ ○ /_not-found                                 873 B          88.1 kB
+├ ƒ /api/auth/user                              0 B                0 B
+├ ƒ /api/citations                              0 B                0 B
+├ ƒ /api/documents/[id]                         0 B                0 B
+├ ƒ /api/documents/[id]/annotations/highlights  0 B                0 B
+├ ƒ /api/documents/[id]/annotations/notes       0 B                0 B
+├ ƒ /api/documents/[id]/bookmarks               0 B                0 B
+├ ƒ /api/documents/[id]/content                 0 B                0 B
+├ ƒ /api/export/csv                             0 B                0 B
+├ ƒ /api/export/jobs                            0 B                0 B
+├ ƒ /api/export/jobs/[id]                       0 B                0 B
+├ ƒ /api/export/pdf                             0 B                0 B
+├ ƒ /api/export/pdf/batch                       0 B                0 B
+├ ƒ /api/health                                 0 B                0 B
+├ ƒ /api/quota/prompts                          0 B                0 B
+├ ƒ /api/quota/reset                            0 B                0 B
+├ ƒ /api/quota/statistics                       0 B                0 B
+├ ƒ /api/quota/status                           0 B                0 B
+├ ƒ /api/recommendations                        0 B                0 B
+├ ƒ /api/recommendations/analytics              0 B                0 B
+├ ƒ /api/recommendations/behavior               0 B                0 B
+├ ƒ /api/recommendations/scheduler              0 B                0 B
+├ ƒ /api/recommendations/track                  0 B                0 B
+├ ƒ /api/saved-searches                         0 B                0 B
+├ ƒ /api/saved-searches/[id]                    0 B                0 B
+├ ƒ /api/saved-searches/[id]/alerts             0 B                0 B
+├ ƒ /api/saved-searches/[id]/execute            0 B                0 B
+├ ƒ /api/search                                 0 B                0 B
+├ ƒ /api/search/history                         0 B                0 B
+├ ƒ /api/search/suggestions                     0 B                0 B
+├ ƒ /api/usage/daily                            0 B                0 B
+├ ƒ /api/usage/history                          0 B                0 B
+├ ƒ /api/usage/statistics                       0 B                0 B
+├ ƒ /api/usage/top-searches                     0 B                0 B
+├ ƒ /auth/callback                              0 B                0 B
+├ ƒ /dashboard                                  5.82 kB         154 kB
+├ ƒ /dashboard/exports                          9.45 kB         159 kB
+├ ƒ /dashboard/profile                          5.38 kB         154 kB
+├ ƒ /dashboard/recommendations                  7.7 kB          156 kB
+├ ƒ /dashboard/saved-searches                   23.5 kB         135 kB
+├ ƒ /dashboard/usage                            7.89 kB         156 kB
+├ ƒ /documents/[id]                             210 kB          371 kB
+├ ○ /help                                       3 kB           99.8 kB
+├ ○ /landing                                    181 B          94.2 kB
+├ ○ /login                                      2.56 kB        96.6 kB
+├ ○ /onboarding                                 6.87 kB         102 kB
+├ ○ /pricing                                    4.14 kB         152 kB
+├ ○ /pricing-comparison                         181 B          94.2 kB
+├ ○ /search                                     7.25 kB         145 kB
+└ ○ /signup                                     4.36 kB         153 kB
++ First Load JS shared by all                   87.2 kB
+  ├ chunks/117-8daee942f7b13ee7.js              31.6 kB
+  ├ chunks/fd9d1056-953192b21254a659.js         53.6 kB
+  └ other shared chunks (total)                 1.97 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

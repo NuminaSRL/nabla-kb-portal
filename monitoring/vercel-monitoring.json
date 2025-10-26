@@ -1,0 +1,151 @@
+{
+  "name": "KB Portal Production Monitoring",
+  "description": "Monitoring configuration for KB Portal at kb.nabla.ai",
+  "checks": [
+    {
+      "name": "Health Check",
+      "url": "https://kb.nabla.ai/api/health",
+      "method": "GET",
+      "interval": 60,
+      "timeout": 10,
+      "expectedStatus": 200,
+      "alerts": {
+        "enabled": true,
+        "channels": ["email", "slack"],
+        "threshold": 3
+      }
+    },
+    {
+      "name": "Main Page Load",
+      "url": "https://kb.nabla.ai",
+      "method": "GET",
+      "interval": 300,
+      "timeout": 10,
+      "expectedStatus": 200,
+      "alerts": {
+        "enabled": true,
+        "channels": ["email"],
+        "threshold": 2
+      }
+    },
+    {
+      "name": "Search API",
+      "url": "https://kb.nabla.ai/api/search",
+      "method": "GET",
+      "interval": 300,
+      "timeout": 15,
+      "expectedStatus": [200, 401],
+      "alerts": {
+        "enabled": true,
+        "channels": ["email", "slack"],
+        "threshold": 3
+      }
+    },
+    {
+      "name": "Auth API",
+      "url": "https://kb.nabla.ai/api/auth/session",
+      "method": "GET",
+      "interval": 300,
+      "timeout": 10,
+      "expectedStatus": [200, 401],
+      "alerts": {
+        "enabled": true,
+        "channels": ["email"],
+        "threshold": 3
+      }
+    }
+  ],
+  "metrics": {
+    "performance": {
+      "enabled": true,
+      "thresholds": {
+        "p95ResponseTime": 2000,
+        "p99ResponseTime": 5000,
+        "errorRate": 0.01
+      }
+    },
+    "availability": {
+      "enabled": true,
+      "target": 99.9
+    },
+    "customMetrics": [
+      {
+        "name": "search_requests_per_minute",
+        "type": "counter",
+        "labels": ["tier", "status"]
+      },
+      {
+        "name": "quota_usage_percentage",
+        "type": "gauge",
+        "labels": ["tier", "user_id"]
+      },
+      {
+        "name": "document_views",
+        "type": "counter",
+        "labels": ["document_id", "tier"]
+      }
+    ]
+  },
+  "alerts": {
+    "rules": [
+      {
+        "name": "High Error Rate",
+        "condition": "error_rate > 0.05",
+        "duration": "5m",
+        "severity": "critical",
+        "channels": ["email", "slack", "pagerduty"]
+      },
+      {
+        "name": "Slow Response Time",
+        "condition": "p95_response_time > 3000",
+        "duration": "10m",
+        "severity": "warning",
+        "channels": ["email", "slack"]
+      },
+      {
+        "name": "Low Availability",
+        "condition": "availability < 99.5",
+        "duration": "15m",
+        "severity": "critical",
+        "channels": ["email", "slack", "pagerduty"]
+      },
+      {
+        "name": "Database Connection Issues",
+        "condition": "supabase_connection_errors > 10",
+        "duration": "5m",
+        "severity": "critical",
+        "channels": ["email", "slack"]
+      },
+      {
+        "name": "High Memory Usage",
+        "condition": "memory_usage > 90",
+        "duration": "5m",
+        "severity": "warning",
+        "channels": ["email"]
+      }
+    ],
+    "channels": {
+      "email": {
+        "enabled": true,
+        "recipients": ["ops@nabla.ai", "dev@nabla.ai"]
+      },
+      "slack": {
+        "enabled": true,
+        "webhook": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        "channel": "#kb-portal-alerts"
+      },
+      "pagerduty": {
+        "enabled": false,
+        "integrationKey": "YOUR_PAGERDUTY_KEY"
+      }
+    }
+  },
+  "logging": {
+    "level": "info",
+    "retention": "30d",
+    "sampling": {
+      "enabled": true,
+      "rate": 0.1
+    }
+  }
+}

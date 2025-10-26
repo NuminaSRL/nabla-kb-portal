@@ -1,0 +1,246 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+      fail-fast: false
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      
+      - name: Setup test environment
+        run: |
+          cp .env.test .env.local
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Run E2E tests
+        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          CI: true
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 30
+      
+      - name: Upload test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots-${{ matrix.browser }}
+          path: test-results/
+          retention-days: 7
+
+  test-mobile:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        device: ['Mobile Chrome', 'Mobile Safari']
+      fail-fast: false
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      
+      - name: Setup test environment
+        run: |
+          cp .env.test .env.local
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Run Mobile E2E tests
+        run: npx playwright test --project="${{ matrix.device }}"
+        env:
+          CI: true
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-mobile-${{ matrix.device }}
+          path: playwright-report/
+          retention-days: 30
+
+  performance-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+      
+      - name: Setup test environment
+        run: |
+          cp .env.test .env.local
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Run Performance tests
+        run: npx playwright test tests/search-performance.spec.ts --project=chromium
+        env:
+          CI: true
+      
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: playwright-report/
+          retention-days: 30
+
+  quota-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+      
+      - name: Setup test environment
+        run: |
+          cp .env.test .env.local
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Run Quota enforcement tests
+        run: npx playwright test tests/quota-enforcement.spec.ts --project=chromium
+        env:
+          CI: true
+      
+      - name: Upload quota test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quota-test-results
+          path: playwright-report/
+          retention-days: 30
+
+  comprehensive-e2e:
+    timeout-minutes: 90
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      
+      - name: Setup test environment
+        run: |
+          cp .env.test .env.local
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Run Comprehensive E2E tests
+        run: npx playwright test tests/e2e-comprehensive.spec.ts --project=chromium
+        env:
+          CI: true
+      
+      - name: Upload comprehensive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comprehensive-e2e-results
+          path: playwright-report/
+          retention-days: 30
+
+  notify:
+    needs: [test, test-mobile, performance-tests, quota-tests, comprehensive-e2e]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test.result }}" == "failure" ] || \
+             [ "${{ needs.test-mobile.result }}" == "failure" ] || \
+             [ "${{ needs.performance-tests.result }}" == "failure" ] || \
+             [ "${{ needs.quota-tests.result }}" == "failure" ] || \
+             [ "${{ needs.comprehensive-e2e.result }}" == "failure" ]; then
+            echo "Some tests failed"
+            exit 1
+          fi
